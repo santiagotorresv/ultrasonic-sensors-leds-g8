@@ -1,95 +1,77 @@
 #include <Arduino.h>
 
-const int trigPin = 5;
-const int echoPin = 18;
+#include "ControladorLeds.h"
+#include "SensorUltrasonico.h"
 
-const int ledVerde = 25;
-const int ledAmarillo = 26;
-const int ledRojo = 27;
+namespace {
+constexpr uint8_t PIN_DISPARO = 5;
+constexpr uint8_t PIN_ECO = 18;
+constexpr uint8_t PIN_LED_VERDE = 25;
+constexpr uint8_t PIN_LED_AMARILLO = 26;
+constexpr uint8_t PIN_LED_ROJO = 27;
+constexpr unsigned long INTERVALO_MEDICION_MS = 250UL;
+constexpr unsigned long VELOCIDAD_SERIAL = 115200UL;
 
-float medirDistancia() {
-    digitalWrite(trigPin, LOW);
-    delayMicroseconds(2);
+SensorUltrasonico sensor(PIN_DISPARO, PIN_ECO);
+ControladorLeds controladorLeds(
+    PIN_LED_VERDE, PIN_LED_AMARILLO, PIN_LED_ROJO);
 
-    digitalWrite(trigPin, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(trigPin, LOW);
+unsigned long ultimaMedicionMs = 0UL;
 
-    long duracion = pulseIn(echoPin, HIGH, 30000);
-
-    if (duracion == 0) {
-        return -1;
-    }
-
-    return duracion * 0.0343 / 2;
-}
-
-void apagarLeds() {
-    digitalWrite(ledVerde, LOW);
-    digitalWrite(ledAmarillo, LOW);
-    digitalWrite(ledRojo, LOW);
-}
-
-void parpadearLed(int led) {
-    for (int i = 0; i < 3; i++) {
-        digitalWrite(led, HIGH);
-        delay(150);
-
-        digitalWrite(led, LOW);
-        delay(150);
+const char* obtenerNombreRango(RangoDistancia rango) {
+    switch (rango) {
+        case RangoDistancia::Rojo:
+            return "Rojo";
+        case RangoDistancia::Amarillo:
+            return "Amarillo";
+        case RangoDistancia::Verde:
+            return "Verde";
+        case RangoDistancia::Lejos:
+            return "Lejos";
+        case RangoDistancia::Invalido:
+        default:
+            return "Invalido";
     }
 }
 
-void parpadearTodos() {
-    for (int i = 0; i < 3; i++) {
-        digitalWrite(ledVerde, HIGH);
-        digitalWrite(ledAmarillo, HIGH);
-        digitalWrite(ledRojo, HIGH);
+void mostrarLectura(unsigned long tiempoMs, float distanciaCm) {
+    const RangoDistancia rango = controladorLeds.obtenerRangoActual();
 
-        delay(150);
+    Serial.print("Tiempo: ");
+    Serial.print(tiempoMs);
+    Serial.print(" ms | ");
 
-        apagarLeds();
-
-        delay(150);
+    if (rango == RangoDistancia::Invalido) {
+        Serial.println("Lectura invalida | Rango: Invalido");
+        return;
     }
+
+    Serial.print("Distancia: ");
+    Serial.print(distanciaCm, 2);
+    Serial.print(" cm | Rango: ");
+    Serial.println(obtenerNombreRango(rango));
+}
 }
 
 void setup() {
-    Serial.begin(115200);
-
-    pinMode(trigPin, OUTPUT);
-    pinMode(echoPin, INPUT);
-
-    pinMode(ledVerde, OUTPUT);
-    pinMode(ledAmarillo, OUTPUT);
-    pinMode(ledRojo, OUTPUT);
-
-    apagarLeds();
+    Serial.begin(VELOCIDAD_SERIAL);
+    sensor.iniciar();
+    controladorLeds.iniciar();
 }
 
 void loop() {
-    float distancia = medirDistancia();
+    const unsigned long tiempoActual = millis();
+    controladorLeds.actualizar(tiempoActual);
 
-    Serial.print("Distancia: ");
-    Serial.print(distancia);
-    Serial.println(" cm");
+    if (tiempoActual - ultimaMedicionMs < INTERVALO_MEDICION_MS) {
+        return;
+    }
 
-    apagarLeds();
+    ultimaMedicionMs = tiempoActual;
+    const float distanciaCm = sensor.medirDistanciaCm();
+    controladorLeds.establecerDistancia(distanciaCm);
 
-    if (distancia > 0 && distancia <= 5) {
-        // 0 - 5 cm: ROJO
-        parpadearLed(ledRojo);
-    }
-    else if (distancia <= 15) {
-        // 6 - 15 cm: AMARILLO
-        parpadearLed(ledAmarillo);
-    }
-    else if (distancia <= 25) {
-        // 16 - 25 cm: VERDE
-        parpadearLed(ledVerde);
-    }
-    else {
-        // Más de 25 cm: TODOS
-        parpadearTodos();
-    }
+    const unsigned long tiempoLecturaMs = millis();
+    controladorLeds.actualizar(tiempoLecturaMs);
+    mostrarLectura(tiempoLecturaMs, distanciaCm);
 }
