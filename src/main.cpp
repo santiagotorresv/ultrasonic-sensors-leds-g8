@@ -61,6 +61,7 @@ void setup() {
 
 void loop() {
     const unsigned long tiempoActual = millis();
+    // El controlador se actualiza en cada ciclo para conservar el parpadeo no bloqueante.
     controladorLeds.actualizar(tiempoActual);
 
     if (tiempoActual - ultimaMedicionMs < INTERVALO_MEDICION_MS) {

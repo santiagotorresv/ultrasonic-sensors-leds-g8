@@ -3,6 +3,7 @@
 #include <math.h>
 
 namespace {
+// Cada límite pertenece al rango inferior: (0,5], (5,15] y (15,25].
 constexpr float LIMITE_ROJO_CM = 5.0F;
 constexpr float LIMITE_AMARILLO_CM = 15.0F;
 constexpr float LIMITE_VERDE_CM = 25.0F;
@@ -41,6 +42,7 @@ void ControladorLeds::establecerDistancia(float distanciaCm) {
 
 void ControladorLeds::actualizar(unsigned long tiempoActual) {
     if (rangoActual_ == RangoDistancia::Invalido) {
+        // Una lectura inválida no debe mantener activo ningún actuador.
         apagarTodos();
         cambioPendiente_ = false;
         return;
@@ -54,6 +56,7 @@ void ControladorLeds::actualizar(unsigned long tiempoActual) {
         return;
     }
 
+    // millis() permite alternar los LEDs sin detener las mediciones con delay().
     if (tiempoActual - ultimoCambioMs_ >= INTERVALO_PARPADEO_MS) {
         ledsEncendidos_ = !ledsEncendidos_;
         ultimoCambioMs_ = tiempoActual;

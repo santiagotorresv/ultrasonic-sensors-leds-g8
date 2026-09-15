@@ -9,7 +9,7 @@
 
 La práctica consiste en integrar un sensor, actuadores y un microcontrolador dentro de un objeto inteligente. El prototipo desarrollado utiliza un sensor ultrasónico HC-SR04 para medir la distancia a un objeto y tres LEDs para representar visualmente el rango detectado. El ESP32 procesa cada lectura, selecciona el rango correspondiente y mantiene el parpadeo de los LEDs sin detener el ciclo principal del programa.
 
-Este documento presenta los requerimientos, el diseño de hardware y software, la implementación y el plan de pruebas. Los apartados cuantitativos se completarán únicamente después de realizar y registrar las mediciones reales.
+Este documento presenta los requerimientos, el diseño de hardware y software, la implementación y las validaciones realizadas. Las pruebas funcionales, de exactitud y de estabilidad se efectuaron físicamente; el tiempo de respuesta y la frecuencia de muestreo se validaron de forma lógica a partir de la temporización configurada en el firmware.
 
 ## Objetivo general
 
@@ -49,12 +49,12 @@ Los cuatro intervalos válidos son contiguos y no se solapan. Los valores 5, 15 
 | Identificador | Atributo | Requerimiento medible | Método previsto de verificación |
 |---|---|---|---|
 | RNF1 | Estabilidad | Operar al menos 10 minutos continuos sin reinicios ni bloqueos. | Observación del prototipo y registro continuo de la salida Serial. |
-| RNF2 | Exactitud | Mantener un error máximo absoluto menor o igual a 3 cm respecto de una referencia física. | Comparación con una cinta métrica en varias distancias del rango de trabajo. |
+| RNF2 | Exactitud | Mantener un error máximo absoluto menor o igual a 3 cm respecto de una referencia física dentro del intervalo validado de 3 cm a 30 cm. | Comparación con una regla graduada en centímetros en las distancias de prueba comprendidas entre 3 cm y 30 cm. |
 | RNF3 | Tiempo de respuesta | Reflejar un cambio de rango en los actuadores en un tiempo menor o igual a 1 segundo. | Análisis lógico del intervalo de medición, el timeout máximo y el flujo no bloqueante. |
 | RNF4 | Frecuencia de muestreo | Producir al menos 2 lecturas por segundo. | Cálculo lógico a partir del intervalo configurado y del escenario conservador con timeout. |
 | RNF5 | Calidad del código | Mantener código legible, modular, orientado a objetos y documentado con comentarios breves y útiles. | Revisión de la estructura, nombres, responsabilidades y dependencias del código fuente. |
 
-RNF1 y RNF2 requieren validación experimental documentada. RNF3 y RNF4 pueden justificarse lógicamente a partir del código y sus constantes de temporización, sin que esto constituya una medición física.
+RNF1 y RNF2 se validaron experimentalmente y quedaron documentados. RNF3 y RNF4 se justificaron lógicamente a partir del código y sus constantes de temporización, sin que esto constituya una medición física.
 
 ## 2. Análisis y Diseño
 
@@ -197,6 +197,20 @@ sequenceDiagram
 
 El controlador alterna el estado encendido/apagado cuando han transcurrido aproximadamente 150 ms. Si cambia el rango, apaga el estado anterior y aplica de inmediato el nuevo patrón en la siguiente actualización. Si el rango es inválido, fuerza los tres LEDs a nivel bajo.
 
+### 2.6 Matriz de trazabilidad
+
+| Requisito | Diseño relacionado | Implementación | Validación / evidencia |
+| --------- | ------------------ | -------------- | ---------------------- |
+| RF1 | HC-SR04 y medición ultrasónica | `SensorUltrasonico` | Pruebas de exactitud y PDF de pruebas |
+| RF2 | Clasificación de rangos con límites de 5, 15 y 25 cm | `ControladorLeds` | Pruebas funcionales de 3, 5, 6, 10, 15, 16, 20, 25 y 30 cm |
+| RF3 | Actuación mediante LEDs | `ControladorLeds` | Pruebas funcionales y fotografías de los LEDs |
+| RF4 | Gestión de timeout y lectura inválida | `SensorUltrasonico`, `ControladorLeds` y `main.cpp` | Prueba complementaria de lectura inválida |
+| RNF1 | Operación continua del sistema | Firmware completo | 19 min 15.251 s sin reinicios ni bloqueos |
+| RNF2 | Medición ultrasónica y conversión del tiempo de eco | `SensorUltrasonico` | 45 lecturas entre 3 cm y 30 cm; error máximo absoluto global de 0.63 cm |
+| RNF3 | Medición cada 250 ms y timeout máximo de 30 ms | Temporización de `main.cpp` y `SensorUltrasonico` | Lógica, ≈280 ms más procesamiento breve |
+| RNF4 | Intervalo de medición de 250 ms | Temporización de `main.cpp` | Lógica, 4 lecturas/s nominales y ≈3.57 lecturas/s conservadoras |
+| RNF5 | POO, modularidad y separación de responsabilidades | `SensorUltrasonico`, `ControladorLeds` y `main.cpp` | Revisión de POO, modularidad, comentarios y responsabilidades |
+
 ## 3. Desarrollo e Implementación
 
 ### 3.1 Entorno de desarrollo
@@ -281,7 +295,7 @@ Esta sección documenta las pruebas funcionales, de exactitud y de estabilidad r
 | Versión o commit del firmware | `a2c95c3` |
 | Alimentación utilizada | ESP32 alimentado mediante USB desde la computadora |
 | Instrumento de referencia | Regla graduada en centímetros |
-| Condiciones y observaciones del ambiente | Prueba realizada en un ambiente interior, con el circuito colocado sobre una superficie estable; las distancias se tomaron desde la cara frontal de los transductores del HC-SR04 hasta el objeto de referencia. |
+| Condiciones y observaciones del ambiente | Pruebas realizadas en un ambiente interior, con el circuito sobre una superficie estable; las distancias se midieron desde la cara frontal de los transductores del HC-SR04 hasta la superficie del objeto de referencia. |
 | Primer timestamp registrado | 142752 ms |
 | Último timestamp registrado | 1298003 ms |
 | Duración calculada | 1155251 ms (19 min 15.251 s) |
@@ -327,7 +341,7 @@ error = distancia medida - distancia de referencia
 error máximo absoluto = máximo de |error|
 ```
 
-El criterio declarado es un error máximo absoluto ≤ 3 cm.
+El criterio declarado es un error máximo absoluto ≤ 3 cm dentro del intervalo validado físicamente de 3 cm a 30 cm.
 
 | Referencia | Lecturas registradas (cm) | Mínimo | Máximo | Promedio | Error máximo absoluto | Evaluación |
 |---:|---|---:|---:|---:|---:|---|
@@ -351,7 +365,7 @@ error absoluto promedio = 11.02 cm / 45 ≈ 0.245 cm
 - Error absoluto promedio de todas las lecturas: **0.245 cm**.
 - Criterio requerido: error máximo absoluto ≤ 3 cm.
 
-El error máximo absoluto global es menor que el límite de 3 cm. Por tanto, la prueba de exactitud queda **APROBADA**.
+Durante las pruebas realizadas entre 3 cm y 30 cm, el error máximo absoluto observado fue de 0.63 cm, cumpliendo el criterio de ≤ 3 cm dentro del intervalo validado. El error absoluto promedio fue de 0.245 cm. Por tanto, la prueba de exactitud queda **APROBADA** para dicho intervalo, sin generalizar el resultado a distancias no probadas.
 
 ### 4.4 Validación de estabilidad
 
@@ -406,25 +420,25 @@ intervalo conservador = 0.250 s + 0.030 s = 0.280 s
 frecuencia conservadora = 1 / 0.280 s ≈ 3.57 lecturas/s
 ```
 
-| Escenario lógico | Intervalo considerado | Frecuencia calculada | Requisito |
-|---|---:|---:|---:|
-| Nominal | 250 ms | 4 lecturas/s | ≥ 2 lecturas/s |
-| Conservador con timeout máximo | 280 ms | ≈ 3.57 lecturas/s | ≥ 2 lecturas/s |
+| Escenario lógico | Intervalo considerado | Frecuencia calculada | Requisito | Evaluación |
+|---|---:|---:|---:|---|
+| Nominal | 250 ms | 4 lecturas/s | ≥ 2 lecturas/s | **APROBADA** |
+| Conservador con timeout máximo | 280 ms | ≈ 3.57 lecturas/s | ≥ 2 lecturas/s | **APROBADA** |
 
-Ambos valores superan el mínimo requerido. Por tanto, el diseño cumple lógicamente el requisito de frecuencia de muestreo ≥ 2 lecturas/s. Esta es una justificación matemática basada en el código, no un resultado experimental.
+En ambos casos se aplica `frecuencia = 1 / intervalo`: nominalmente, `1 / 0.250 s = 4 lecturas/s`; con el timeout máximo, `1 / 0.280 s ≈ 3.57 lecturas/s`. Ambos valores superan el mínimo requerido. Por tanto, el diseño cumple lógicamente el requisito de frecuencia de muestreo ≥ 2 lecturas/s.
+
+Esta es una validación lógica derivada de la temporización configurada en el firmware y no una medición experimental de frecuencia.
 
 **Evaluación: APROBADA mediante validación lógica del diseño, no mediante medición física.**
 
-La captura Serial puede utilizarse como evidencia complementaria para observar el comportamiento real, pero no es necesaria para justificar matemáticamente el diseño:
-
-| Inicio del registro | Fin del registro | Duración | Cantidad de lecturas | Intervalo promedio | Frecuencia observada | Evidencia |
-|---|---|---:|---:|---:|---:|---|
-| | | | | | | |
+La salida Serial se conserva como evidencia complementaria del funcionamiento, pero no es necesaria para justificar matemáticamente la frecuencia configurada.
 
 
 ### 4.7 Control de evidencias
 
-Los datos numéricos y los fragmentos de salida Serial se incorporaron directamente en las secciones 4.2 a 4.4. Las evidencias disponibles son:
+El PDF respalda las mediciones numéricas, la clasificación de rangos, la respuesta ante una lectura inválida y los timestamps empleados en la validación de estabilidad. Las fotografías respaldan el montaje físico y la activación visual de los actuadores. Una fotografía estática no demuestra por sí sola el parpadeo; este comportamiento fue observado durante la prueba funcional.
+
+Las evidencias reales disponibles son:
 
 - [PDF de pruebas de rangos, exactitud y lectura inválida](<docs/evidencias/Pruebas de rangos.pdf>).
 - [Fotografía general del prototipo](docs/evidencias/prototipo.jpeg).
@@ -444,7 +458,7 @@ Las pruebas realizadas respaldan el funcionamiento de los rangos, el tratamiento
 | Comportamiento de rangos | Coincidir con la lógica definida en RF2 y RF3 | Los rangos observados y el comportamiento físico coincidieron en 3, 5, 6, 10, 15, 16, 20, 25 y 30 cm | **APROBADA** |
 | Lectura inválida | Informar `Invalido` y mantener apagados los tres LEDs | Ocho registros consecutivos inválidos; LEDs apagados y ejecución normal | **APROBADA** |
 | Estabilidad | ≥ 10 minutos sin reinicios ni bloqueos | Desde 142752 ms hasta 1298003 ms: 1155251 ms (19 min 15.251 s) continuos, sin reinicios, bloqueos, fallos ni interferencias observados | **APROBADA** |
-| Exactitud | Error máximo absoluto ≤ 3 cm | Error máximo global de 0.63 cm y error absoluto promedio de 0.245 cm sobre 45 lecturas | **APROBADA** |
+| Exactitud | Error máximo absoluto ≤ 3 cm en el intervalo validado de 3 cm a 30 cm | Error máximo global de 0.63 cm y error absoluto promedio de 0.245 cm sobre 45 lecturas realizadas entre 3 cm y 30 cm | **APROBADA dentro del intervalo validado** |
 | Tiempo de respuesta | ≤ 1 segundo | ≈ 280 ms más procesamiento breve en el peor caso teórico conservador | **APROBADA mediante validación lógica; sin medición física** |
 | Frecuencia de muestreo | ≥ 2 lecturas/s | 4 lecturas/s nominales y ≈ 3.57 lecturas/s en el escenario conservador | **APROBADA mediante validación lógica; sin medición física** |
 
@@ -452,7 +466,7 @@ Las pruebas realizadas respaldan el funcionamiento de los rangos, el tratamiento
 
 Las pruebas funcionales confirmaron la clasificación y el comportamiento físico esperado en los cuatro rangos, incluidos los límites de 5, 15 y 25 cm. También se comprobó que, ante la ausencia de un eco válido, el sistema informa el rango `Invalido`, mantiene apagados los tres LEDs y continúa ejecutándose sin reinicios ni bloqueos.
 
-En las 45 lecturas de exactitud, el error máximo absoluto global fue 0.63 cm y el error absoluto promedio fue aproximadamente 0.245 cm. Ambos resultados respaldan el cumplimiento del criterio de error máximo absoluto ≤ 3 cm para las distancias probadas.
+Durante las 45 lecturas realizadas entre 3 cm y 30 cm, el error máximo absoluto global fue 0.63 cm y el error absoluto promedio fue aproximadamente 0.245 cm. Estos resultados respaldan el cumplimiento del criterio de error máximo absoluto ≤ 3 cm dentro del intervalo validado y no se generalizan a distancias fuera de él.
 
 La sesión continua comenzó en el timestamp 142752 ms y terminó en 1298003 ms. La diferencia fue 1155251 ms, equivalente a 19 min 15.251 s, sin reinicios, bloqueos, fallos funcionales ni interferencias observadas; por tanto, cumplió el mínimo de 10 minutos declarado para estabilidad.
 
@@ -484,7 +498,7 @@ Los diagramas iniciales están incluidos en la sección 2 mediante Mermaid. El e
 
 ### Anexo C. Evidencias
 
-Las evidencias reales se encuentran en [`docs/evidencias/`](docs/evidencias/) y se describen en su [índice de evidencias](docs/evidencias/README.md).
+Las evidencias utilizadas se encuentran en [`docs/evidencias/`](docs/evidencias/) y se describen en su [índice de evidencias](docs/evidencias/README.md). Como accesos directos se incluyen el [PDF principal de pruebas](<docs/evidencias/Pruebas de rangos.pdf>), la [fotografía general del prototipo](docs/evidencias/prototipo.jpeg) y las fotografías de activación de los LEDs [rojo](docs/evidencias/led-rojo.jpeg), [amarillo](docs/evidencias/led-amarillo.jpeg), [verde](docs/evidencias/led-verde.jpeg) y [los tres simultáneamente](docs/evidencias/tres-colores-leds.jpeg).
 
 ### Anexo D. Consigna
 

@@ -3,6 +3,7 @@
 #include <math.h>
 
 namespace {
+// Limita la espera de ECHO a 30 ms para detectar la ausencia de un eco válido.
 constexpr unsigned long TIEMPO_MAXIMO_ECO_US = 30000UL;
 constexpr float VELOCIDAD_SONIDO_CM_POR_US = 0.0343F;
 constexpr unsigned int DURACION_PULSO_DISPARO_US = 10U;
@@ -33,5 +34,6 @@ float SensorUltrasonico::medirDistanciaCm() {
         return NAN;
     }
 
+    // La duración representa ida y vuelta del sonido; por eso se divide entre dos.
     return duracionEcoUs * VELOCIDAD_SONIDO_CM_POR_US / 2.0F;
 }
