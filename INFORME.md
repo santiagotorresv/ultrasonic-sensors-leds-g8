@@ -270,7 +270,7 @@ El intervalo configurado corresponde nominalmente a cuatro lecturas por segundo.
 
 ## 4. Pruebas y Validaciones
 
-Esta sección define cómo se comprobarán los requerimientos. Las tablas experimentales se encuentran preparadas para registrar datos reales y ninguna se considera aprobada en esta versión. El tiempo de respuesta y la frecuencia de muestreo se analizan además mediante validaciones lógicas basadas en el diseño del firmware.
+Esta sección documenta las pruebas funcionales, de exactitud y de estabilidad realizadas. El tiempo de respuesta y la frecuencia de muestreo se validan lógicamente a partir del diseño del firmware y se mantienen identificadas como análisis teóricos, no como mediciones físicas.
 
 ### 4.1 Datos generales de la sesión de pruebas
 
@@ -282,25 +282,44 @@ Esta sección define cómo se comprobarán los requerimientos. Las tablas experi
 | Alimentación utilizada | |
 | Instrumento de referencia | |
 | Condiciones y observaciones del ambiente | |
+| Primer timestamp registrado | 4521 ms |
+| Último timestamp registrado | 1298003 ms |
 
 ### 4.2 Validación funcional de rangos y actuadores
 
-Se colocará un objeto plano a las distancias de referencia indicadas. Se observará el rango informado por Serial y el patrón físico de los LEDs. Los casos límite se medirán con especial cuidado.
+Se probaron distancias dentro de los cuatro rangos, incluidos los límites exactos de 5, 15 y 25 cm. En todos los casos el rango observado y el comportamiento físico coincidieron con lo esperado.
 
-| Caso | Distancia de referencia | Rango esperado | Comportamiento esperado | Distancia observada | Rango observado | Comportamiento observado | Evidencia | Evaluación |
-|---|---:|---|---|---:|---|---|---|---|
-| PF-01 | Sin eco válido | `Invalido` | Todos apagados | | | | | |
-| PF-02 | 3 cm | `Rojo` | Parpadea rojo | | | | | |
-| PF-03 | 5 cm | `Rojo` | Parpadea rojo | | | | | |
-| PF-04 | 6 cm | `Amarillo` | Parpadea amarillo | | | | | |
-| PF-05 | 15 cm | `Amarillo` | Parpadea amarillo | | | | | |
-| PF-06 | 16 cm | `Verde` | Parpadea verde | | | | | |
-| PF-07 | 25 cm | `Verde` | Parpadea verde | | | | | |
-| PF-08 | 30 cm | `Lejos` | Parpadean los tres | | | | | |
+| Caso | Distancia de referencia | Rango esperado | Distancia promedio observada | Rango observado | Comportamiento físico observado | Evaluación |
+|---|---:|---|---:|---|---|---|
+| PF-01 | Sin eco válido | `Invalido` | No aplicable | `Invalido` | Los tres LEDs permanecieron apagados | **APROBADA** |
+| PF-02 | 3 cm | `Rojo` | 3.310 cm | `Rojo` | Correcto | **APROBADA** |
+| PF-03 | 5 cm | `Rojo` | 4.944 cm | `Rojo` | Correcto | **APROBADA** |
+| PF-04 | 6 cm | `Amarillo` | 6.252 cm | `Amarillo` | Correcto | **APROBADA** |
+| PF-05 | 10 cm | `Amarillo` | 10.630 cm | `Amarillo` | Correcto | **APROBADA** |
+| PF-06 | 15 cm | `Amarillo` | 14.750 cm | `Amarillo` | Correcto | **APROBADA** |
+| PF-07 | 16 cm | `Verde` | 16.120 cm | `Verde` | Correcto | **APROBADA** |
+| PF-08 | 20 cm | `Verde` | 19.992 cm | `Verde` | Correcto | **APROBADA** |
+| PF-09 | 25 cm | `Verde` | 24.610 cm | `Verde` | Correcto | **APROBADA** |
+| PF-10 | 30 cm | `Lejos` | 29.812 cm | `Lejos` | Los tres LEDs parpadearon simultáneamente | **APROBADA** |
+
+Para PF-01 se apuntó el HC-SR04 hacia el techo con el fin de provocar ausencia de un eco válido dentro del timeout configurado. El monitor Serial mostró repetidamente:
+
+```text
+Tiempo: 20530 ms | Lectura invalida | Rango: Invalido
+Tiempo: 20780 ms | Lectura invalida | Rango: Invalido
+Tiempo: 21030 ms | Lectura invalida | Rango: Invalido
+Tiempo: 21280 ms | Lectura invalida | Rango: Invalido
+Tiempo: 21530 ms | Lectura invalida | Rango: Invalido
+Tiempo: 21780 ms | Lectura invalida | Rango: Invalido
+Tiempo: 22030 ms | Lectura invalida | Rango: Invalido
+Tiempo: 22280 ms | Lectura invalida | Rango: Invalido
+```
+
+Durante estas lecturas los tres LEDs permanecieron apagados, el sistema continuó ejecutándose normalmente y no hubo reinicios ni bloqueos. Por ello, la prueba funcional de lectura inválida, timeout y apagado de actuadores queda **APROBADA**.
 
 ### 4.3 Validación de exactitud
 
-Para cada distancia se registrarán varias lecturas con el objeto y el sensor inmóviles. Se calcularán el error de cada lectura y el error máximo absoluto:
+Para cada distancia se registraron cinco lecturas. El error máximo absoluto de cada grupo corresponde al mayor valor de la diferencia absoluta entre una lectura y su referencia:
 
 ```text
 error = distancia medida - distancia de referencia
@@ -309,21 +328,44 @@ error máximo absoluto = máximo de |error|
 
 El criterio declarado es un error máximo absoluto ≤ 3 cm.
 
-| Distancia de referencia | Número de lecturas | Distancia mínima | Distancia máxima | Promedio | Error máximo absoluto | Evidencia | Evaluación |
-|---:|---:|---:|---:|---:|---:|---|---|
-| | | | | | | | |
-| | | | | | | | |
-| | | | | | | | |
-| | | | | | | | |
-| | | | | | | | |
+| Referencia | Lecturas registradas (cm) | Mínimo | Máximo | Promedio | Error máximo absoluto | Evaluación |
+|---:|---|---:|---:|---:|---:|---|
+| 3 cm | 3.31, 3.31, 3.31, 3.31, 3.31 | 3.31 cm | 3.31 cm | 3.310 cm | 0.31 cm | **APROBADA** |
+| 5 cm | 4.94, 4.94, 4.96, 4.94, 4.94 | 4.94 cm | 4.96 cm | 4.944 cm | 0.06 cm | **APROBADA** |
+| 6 cm | 6.24, 6.24, 6.26, 6.26, 6.26 | 6.24 cm | 6.26 cm | 6.252 cm | 0.26 cm | **APROBADA** |
+| 10 cm | 10.63, 10.63, 10.63, 10.63, 10.63 | 10.63 cm | 10.63 cm | 10.630 cm | 0.63 cm | **APROBADA** |
+| 15 cm | 14.75, 14.75, 14.75, 14.75, 14.75 | 14.75 cm | 14.75 cm | 14.750 cm | 0.25 cm | **APROBADA** |
+| 16 cm | 16.12, 16.12, 16.12, 16.12, 16.12 | 16.12 cm | 16.12 cm | 16.120 cm | 0.12 cm | **APROBADA** |
+| 20 cm | 19.98, 20.00, 20.00, 20.00, 19.98 | 19.98 cm | 20.00 cm | 19.992 cm | 0.02 cm | **APROBADA** |
+| 25 cm | 24.61, 24.61, 24.61, 24.61, 24.61 | 24.61 cm | 24.61 cm | 24.610 cm | 0.39 cm | **APROBADA** |
+| 30 cm | 29.81, 29.81, 29.81, 29.82, 29.81 | 29.81 cm | 29.82 cm | 29.812 cm | 0.19 cm | **APROBADA** |
+
+Se analizaron 45 lecturas en total. La suma de sus errores absolutos es 11.02 cm, por lo que:
+
+```text
+error absoluto promedio = 11.02 cm / 45 ≈ 0.245 cm
+```
+
+- Error máximo absoluto global: **0.63 cm**, observado en las lecturas de referencia de 10 cm.
+- Error absoluto promedio de todas las lecturas: **0.245 cm**.
+- Criterio requerido: error máximo absoluto ≤ 3 cm.
+
+El error máximo absoluto global es menor que el límite de 3 cm. Por tanto, la prueba de exactitud queda **APROBADA**.
 
 ### 4.4 Validación de estabilidad
 
-Se mantendrá el prototipo funcionando y registrando datos de forma continua durante un mínimo de 10 minutos. Se documentarán cualquier reinicio, bloqueo, interrupción de lecturas o comportamiento anómalo.
+Las pruebas de rangos y exactitud se realizaron durante la misma sesión continua del ESP32. La duración se obtuvo a partir del primer y último timestamp registrados:
 
-| Inicio | Fin | Duración total | Lecturas registradas | Reinicios | Bloqueos | Incidencias | Evidencia | Evaluación |
-|---|---|---:|---:|---:|---:|---|---|---|
-| | | | | | | | | |
+```text
+duración = 1298003 ms - 142752 ms
+duración = 1155251 ms = 1155.251 s = 19 min 15.251 s
+```
+
+| Inicio | Fin | Duración total | Reinicios | Bloqueos | Continuidad de lecturas | Respuesta de LEDs | Fallos o interferencias observados | Evaluación |
+|---:|---:|---:|---:|---:|---|---|---|---|
+| 142752 ms | 1298003 ms | 1155251 ms (19 min 15.251 s) | 0 | 0 | El sensor continuó realizando lecturas | Los LEDs siguieron respondiendo correctamente | Ninguno | **APROBADA** |
+
+La sesión superó los 10 minutos requeridos sin reinicios ni bloqueos. No se observaron fallos funcionales ni interferencias durante el proceso. Por tanto, la prueba de estabilidad queda **APROBADA**.
 
 ### 4.5 Validación del tiempo de respuesta
 
@@ -345,6 +387,8 @@ tiempo teórico conservador                = 280 ms + procesamiento breve
 Después de obtener la lectura, `main.cpp` entrega inmediatamente la distancia al `ControladorLeds` y llama a `actualizar()`. El parpadeo no utiliza `delay()`, por lo que no introduce una espera bloqueante adicional. El procesamiento restante es pequeño frente al margen aproximado de 720 ms entre la base conservadora y el límite requerido.
 
 Por tanto, el diseño cumple lógicamente el requisito de tiempo de respuesta ≤ 1 segundo. Esta conclusión se limita al análisis del código y no afirma que se haya efectuado una medición física del tiempo de respuesta.
+
+**Evaluación: APROBADA mediante validación lógica del diseño, no mediante medición física.**
 
 ### 4.6 Validación de la frecuencia de muestreo
 
@@ -368,6 +412,8 @@ frecuencia conservadora = 1 / 0.280 s ≈ 3.57 lecturas/s
 
 Ambos valores superan el mínimo requerido. Por tanto, el diseño cumple lógicamente el requisito de frecuencia de muestreo ≥ 2 lecturas/s. Esta es una justificación matemática basada en el código, no un resultado experimental.
 
+**Evaluación: APROBADA mediante validación lógica del diseño, no mediante medición física.**
+
 La captura Serial puede utilizarse como evidencia complementaria para observar el comportamiento real, pero no es necesaria para justificar matemáticamente el diseño:
 
 | Inicio del registro | Fin del registro | Duración | Cantidad de lecturas | Intervalo promedio | Frecuencia observada | Evidencia |
@@ -377,38 +423,39 @@ La captura Serial puede utilizarse como evidencia complementaria para observar e
 
 ### 4.7 Control de evidencias
 
-Las fotografías, videos, capturas y registros se almacenarán en `docs/evidencias/`. Cada referencia escrita en las tablas deberá coincidir con un archivo identificable dentro de esa carpeta. Las reglas de organización se describen en `docs/evidencias/README.md`.
+Los datos numéricos y los fragmentos de salida Serial proporcionados para esta versión se incorporaron directamente en las secciones 4.2 a 4.4. No se recibieron fotografías ni nombres de archivos de evidencia, por lo que no se referencian elementos adicionales. Si se incorporan evidencias posteriormente, se organizarán en `docs/evidencias/` según `docs/evidencias/README.md`.
 
 ## 5. Resultados
 
-Los resultados experimentales están pendientes de completar con mediciones reales y evidencias reproducibles. La existencia del prototipo funcional ha sido informada por el equipo, pero esta versión todavía no incorpora registros experimentales. El tiempo de respuesta y la frecuencia de muestreo sí cuentan con una validación lógica del diseño, separada de cualquier medición física.
+Las pruebas realizadas respaldan el funcionamiento de los rangos, el tratamiento de lecturas inválidas, la exactitud y la estabilidad. El tiempo de respuesta y la frecuencia de muestreo se respaldan mediante validaciones lógicas del diseño y no deben interpretarse como mediciones físicas.
 
-| Aspecto | Objetivo | Resultado medido | Evaluación |
+| Aspecto | Objetivo | Resultado | Evaluación |
 |---|---|---|---|
-| Comportamiento de rangos | Coincidir con la lógica definida en RF2 y RF3 | Pendiente de documentar | No evaluado |
-| Estabilidad | ≥ 10 minutos sin reinicios ni bloqueos | Pendiente de medición | No evaluado |
-| Exactitud | Error máximo absoluto ≤ 3 cm | Pendiente de medición | No evaluado |
-| Tiempo de respuesta | ≤ 1 segundo | ≈ 280 ms más procesamiento breve en el peor caso teórico conservador | Cumplimiento lógico del diseño; sin medición física |
-| Frecuencia de muestreo | ≥ 2 lecturas/s | 4 lecturas/s nominales y ≈ 3.57 lecturas/s en el escenario conservador | Cumplimiento lógico del diseño; sin medición física |
-
-No se asigna la condición de aprobada a ninguna prueba experimental hasta completar las tablas correspondientes y adjuntar sus evidencias. Las evaluaciones de tiempo de respuesta y frecuencia indican únicamente cumplimiento lógico del diseño.
+| Comportamiento de rangos | Coincidir con la lógica definida en RF2 y RF3 | Los rangos observados y el comportamiento físico coincidieron en 3, 5, 6, 10, 15, 16, 20, 25 y 30 cm | **APROBADA** |
+| Lectura inválida | Informar `Invalido` y mantener apagados los tres LEDs | Ocho registros consecutivos inválidos; LEDs apagados y ejecución normal | **APROBADA** |
+| Estabilidad | ≥ 10 minutos sin reinicios ni bloqueos | 19 min 15.251 s continuos, sin reinicios, bloqueos, fallos ni interferencias observados | **APROBADA** |
+| Exactitud | Error máximo absoluto ≤ 3 cm | Error máximo global de 0.63 cm y error absoluto promedio de 0.245 cm sobre 45 lecturas | **APROBADA** |
+| Tiempo de respuesta | ≤ 1 segundo | ≈ 280 ms más procesamiento breve en el peor caso teórico conservador | **APROBADA mediante validación lógica; sin medición física** |
+| Frecuencia de muestreo | ≥ 2 lecturas/s | 4 lecturas/s nominales y ≈ 3.57 lecturas/s en el escenario conservador | **APROBADA mediante validación lógica; sin medición física** |
 
 ## 6. Conclusiones
 
-La versión actual establece una base técnica coherente con los requerimientos funcionales: separa la medición ultrasónica del control de actuadores, emplea programación orientada a objetos y evita bloquear el programa durante el parpadeo. La planificación periódica y la salida Serial fueron diseñadas para facilitar la validación posterior.
+Las pruebas funcionales confirmaron la clasificación y el comportamiento físico esperado en los cuatro rangos, incluidos los límites de 5, 15 y 25 cm. También se comprobó que, ante la ausencia de un eco válido, el sistema informa el rango `Invalido`, mantiene apagados los tres LEDs y continúa ejecutándose sin reinicios ni bloqueos.
 
-El análisis del código permite concluir que el diseño satisface lógicamente los límites declarados de tiempo de respuesta y frecuencia de muestreo. Todavía no corresponde emitir conclusiones experimentales sobre exactitud, estabilidad, tiempo de respuesta físico o frecuencia observada. Esas conclusiones deberán redactarse después de ejecutar el plan de pruebas y conservar los datos obtenidos.
+En las 45 lecturas de exactitud, el error máximo absoluto global fue 0.63 cm y el error absoluto promedio fue aproximadamente 0.245 cm. Ambos resultados respaldan el cumplimiento del criterio de error máximo absoluto ≤ 3 cm para las distancias probadas.
+
+La sesión continua duró 19 min 15.251 s sin reinicios, bloqueos, fallos funcionales ni interferencias observadas, por lo que cumplió el mínimo de 10 minutos declarado para estabilidad.
+
+El diseño satisface lógicamente los requisitos de tiempo de respuesta y frecuencia de muestreo: el peor caso teórico conservador es de aproximadamente 280 ms más procesamiento breve, y las frecuencias calculadas son 4 lecturas/s en el caso nominal y aproximadamente 3.57 lecturas/s en el conservador. Estas dos conclusiones son teóricas y no constituyen mediciones físicas.
 
 ## 7. Recomendaciones
 
-- Ejecutar todas las pruebas con la misma versión identificada del firmware.
-- Utilizar un objeto plano y mantenerlo perpendicular al sensor durante las pruebas de exactitud.
-- Registrar las condiciones de alimentación, montaje y ambiente que puedan afectar la repetibilidad.
-- Probar explícitamente los límites de 5, 15 y 25 cm, además de valores a ambos lados de cada límite.
-- Guardar los registros Serial originales y no solo resultados calculados.
-- Medir antes de introducir calibración o filtros; cualquier ajuste posterior deberá justificarse con evidencia.
-- Tomar fotografías claras del divisor de voltaje y de las resistencias limitadoras de los LEDs.
-- Actualizar resultados, conclusiones y recomendaciones una vez completadas las mediciones.
+- Conservar los datos originales de las lecturas y los registros Serial junto con la versión del firmware utilizada.
+- Repetir las pruebas de estabilidad y exactitud si se modifica el hardware, el montaje o el firmware.
+- Mantener sin filtros ni calibraciones adicionales mientras los resultados continúen dentro del criterio; cualquier cambio futuro debe justificarse con nuevas mediciones.
+- Registrar el instrumento de referencia y las condiciones de la sesión en futuras repeticiones para mejorar la reproducibilidad.
+- Utilizar una captura Serial como comprobación complementaria de la frecuencia observada, manteniendo separada esa evidencia de la validación matemática actual.
+- Realizar una medición física del tiempo de respuesta si se desea complementar el límite demostrado lógicamente por el diseño.
 
 ## 8. Anexos
 
