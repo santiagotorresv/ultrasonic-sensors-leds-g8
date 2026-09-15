@@ -276,14 +276,15 @@ Esta sección documenta las pruebas funcionales, de exactitud y de estabilidad r
 
 | Campo | Valor registrado |
 |---|---|
-| Fecha y hora | |
-| Integrantes responsables | |
-| Versión o commit del firmware | |
-| Alimentación utilizada | |
-| Instrumento de referencia | |
-| Condiciones y observaciones del ambiente | |
-| Primer timestamp registrado | 4521 ms |
+| Fecha y hora | 14/09/2026 |
+| Integrantes responsables | Grupo 8: Santiago Javier Torres Vacaflores y Ariel Adrian Mercado Alegre |
+| Versión o commit del firmware | `a2c95c3` |
+| Alimentación utilizada | ESP32 alimentado mediante USB desde la computadora |
+| Instrumento de referencia | Regla graduada en centímetros |
+| Condiciones y observaciones del ambiente | Prueba realizada en un ambiente interior, con el circuito colocado sobre una superficie estable; las distancias se tomaron desde la cara frontal de los transductores del HC-SR04 hasta el objeto de referencia. |
+| Primer timestamp registrado | 142752 ms |
 | Último timestamp registrado | 1298003 ms |
+| Duración calculada | 1155251 ms (19 min 15.251 s) |
 
 ### 4.2 Validación funcional de rangos y actuadores
 
@@ -423,7 +424,16 @@ La captura Serial puede utilizarse como evidencia complementaria para observar e
 
 ### 4.7 Control de evidencias
 
-Los datos numéricos y los fragmentos de salida Serial proporcionados para esta versión se incorporaron directamente en las secciones 4.2 a 4.4. No se recibieron fotografías ni nombres de archivos de evidencia, por lo que no se referencian elementos adicionales. Si se incorporan evidencias posteriormente, se organizarán en `docs/evidencias/` según `docs/evidencias/README.md`.
+Los datos numéricos y los fragmentos de salida Serial se incorporaron directamente en las secciones 4.2 a 4.4. Las evidencias disponibles son:
+
+- [PDF de pruebas de rangos, exactitud y lectura inválida](<docs/evidencias/Pruebas de rangos.pdf>).
+- [Fotografía general del prototipo](docs/evidencias/prototipo.jpeg).
+- [Fotografía del LED rojo](docs/evidencias/led-rojo.jpeg).
+- [Fotografía del LED amarillo](docs/evidencias/led-amarillo.jpeg).
+- [Fotografía del LED verde](docs/evidencias/led-verde.jpeg).
+- [Fotografía de los tres LEDs](docs/evidencias/tres-colores-leds.jpeg).
+
+La descripción y relación de cada archivo con las pruebas se encuentra en [`docs/evidencias/README.md`](docs/evidencias/README.md).
 
 ## 5. Resultados
 
@@ -433,7 +443,7 @@ Las pruebas realizadas respaldan el funcionamiento de los rangos, el tratamiento
 |---|---|---|---|
 | Comportamiento de rangos | Coincidir con la lógica definida en RF2 y RF3 | Los rangos observados y el comportamiento físico coincidieron en 3, 5, 6, 10, 15, 16, 20, 25 y 30 cm | **APROBADA** |
 | Lectura inválida | Informar `Invalido` y mantener apagados los tres LEDs | Ocho registros consecutivos inválidos; LEDs apagados y ejecución normal | **APROBADA** |
-| Estabilidad | ≥ 10 minutos sin reinicios ni bloqueos | 19 min 15.251 s continuos, sin reinicios, bloqueos, fallos ni interferencias observados | **APROBADA** |
+| Estabilidad | ≥ 10 minutos sin reinicios ni bloqueos | Desde 142752 ms hasta 1298003 ms: 1155251 ms (19 min 15.251 s) continuos, sin reinicios, bloqueos, fallos ni interferencias observados | **APROBADA** |
 | Exactitud | Error máximo absoluto ≤ 3 cm | Error máximo global de 0.63 cm y error absoluto promedio de 0.245 cm sobre 45 lecturas | **APROBADA** |
 | Tiempo de respuesta | ≤ 1 segundo | ≈ 280 ms más procesamiento breve en el peor caso teórico conservador | **APROBADA mediante validación lógica; sin medición física** |
 | Frecuencia de muestreo | ≥ 2 lecturas/s | 4 lecturas/s nominales y ≈ 3.57 lecturas/s en el escenario conservador | **APROBADA mediante validación lógica; sin medición física** |
@@ -444,7 +454,7 @@ Las pruebas funcionales confirmaron la clasificación y el comportamiento físic
 
 En las 45 lecturas de exactitud, el error máximo absoluto global fue 0.63 cm y el error absoluto promedio fue aproximadamente 0.245 cm. Ambos resultados respaldan el cumplimiento del criterio de error máximo absoluto ≤ 3 cm para las distancias probadas.
 
-La sesión continua duró 19 min 15.251 s sin reinicios, bloqueos, fallos funcionales ni interferencias observadas, por lo que cumplió el mínimo de 10 minutos declarado para estabilidad.
+La sesión continua comenzó en el timestamp 142752 ms y terminó en 1298003 ms. La diferencia fue 1155251 ms, equivalente a 19 min 15.251 s, sin reinicios, bloqueos, fallos funcionales ni interferencias observadas; por tanto, cumplió el mínimo de 10 minutos declarado para estabilidad.
 
 El diseño satisface lógicamente los requisitos de tiempo de respuesta y frecuencia de muestreo: el peor caso teórico conservador es de aproximadamente 280 ms más procesamiento breve, y las frecuencias calculadas son 4 lecturas/s en el caso nominal y aproximadamente 3.57 lecturas/s en el conservador. Estas dos conclusiones son teóricas y no constituyen mediciones físicas.
 
@@ -474,7 +484,7 @@ Los diagramas iniciales están incluidos en la sección 2 mediante Mermaid. El e
 
 ### Anexo C. Evidencias
 
-Las evidencias futuras se organizarán en [`docs/evidencias/`](docs/evidencias/) siguiendo su [guía de registro](docs/evidencias/README.md).
+Las evidencias reales se encuentran en [`docs/evidencias/`](docs/evidencias/) y se describen en su [índice de evidencias](docs/evidencias/README.md).
 
 ### Anexo D. Consigna
 

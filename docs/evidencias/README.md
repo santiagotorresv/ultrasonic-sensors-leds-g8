@@ -1,38 +1,27 @@
 # Evidencias de pruebas y validaciones
 
-Esta carpeta almacenará los registros utilizados para respaldar la sección **Pruebas y Validaciones** de `INFORME.md`.
+Esta carpeta contiene las evidencias reales utilizadas para respaldar las pruebas documentadas en [`INFORME.md`](../../INFORME.md). Incluye el registro de las mediciones y fotografías del montaje y de los actuadores en funcionamiento.
 
-En esta versión todavía no se incluyen resultados experimentales. Añadir un archivo aquí no implica que una prueba esté aprobada: su evaluación debe registrarse también en el informe.
+## Evidencias disponibles
 
-## Evidencias previstas
+| Archivo | Tipo de evidencia | Qué demuestra | Sección relacionada del informe |
+|---|---|---|---|
+| [`Pruebas de rangos.pdf`](<Pruebas de rangos.pdf>) | PDF de pruebas | Registra las pruebas de clasificación de rangos, las mediciones de exactitud y la respuesta ante una lectura inválida; además, contiene los timestamps utilizados como evidencia de operación continua. | 4.2 Validación funcional, 4.3 Validación de exactitud y 4.4 Validación de estabilidad |
+| [`prototipo.jpeg`](prototipo.jpeg) | Fotografía general | Muestra el montaje físico del prototipo con el ESP32, el HC-SR04 y los actuadores. | 2.3 Diseño del circuito y 4.2 Validación funcional |
+| [`led-rojo.jpeg`](led-rojo.jpeg) | Fotografía del LED rojo | Respalda visualmente la activación del LED rojo para su rango correspondiente. | 4.2 Validación funcional |
+| [`led-amarillo.jpeg`](led-amarillo.jpeg) | Fotografía del LED amarillo | Respalda visualmente la activación del LED amarillo para su rango correspondiente. | 4.2 Validación funcional |
+| [`led-verde.jpeg`](led-verde.jpeg) | Fotografía del LED verde | Respalda visualmente la activación del LED verde para su rango correspondiente. | 4.2 Validación funcional |
+| [`tres-colores-leds.jpeg`](tres-colores-leds.jpeg) | Fotografía de los tres LEDs | Respalda visualmente la activación simultánea de los tres LEDs para el rango `Lejos`. | 4.2 Validación funcional |
 
-| Tipo de prueba | Evidencia recomendada |
-|---|---|
-| Funcionamiento y rangos | Fotografías o video del montaje, el objeto de referencia y los LEDs |
-| Exactitud | Registro Serial y fotografías de la cinta métrica para cada distancia |
-| Estabilidad | Registro Serial continuo de al menos 10 minutos y observaciones de la sesión |
-| Tiempo de respuesta | Video o registro temporal que permita identificar el cambio de rango y la respuesta |
-| Frecuencia de muestreo | Captura completa de Serial con marcas de tiempo |
+## Relación con las pruebas
 
-## Convención de nombres
+- Las mediciones numéricas incluidas en `Pruebas de rangos.pdf` respaldan la prueba de exactitud y la clasificación de distancias en los rangos definidos.
+- Las fotografías respaldan visualmente el montaje físico y la activación de los actuadores en los rangos rojo, amarillo, verde y lejos. El comportamiento de parpadeo se valida mediante la observación realizada durante la prueba funcional.
+- Los timestamps registrados durante las pruebas respaldan el intervalo de operación continua empleado en la validación de estabilidad.
+- El tiempo de respuesta y la frecuencia de muestreo fueron validados lógicamente a partir del diseño del firmware. Por ello no requieren video ni evidencia física adicional en este informe.
 
-Usar nombres descriptivos, sin espacios y con fecha en formato `AAAA-MM-DD`. Por ejemplo:
+## Conservación de evidencias
 
-```text
-exactitud_10cm_2026-09-13.txt
-estabilidad_10min_2026-09-13.txt
-respuesta_rojo_amarillo_2026-09-13.mp4
-muestreo_2026-09-13.txt
-montaje_general_2026-09-13.jpg
-```
-
-Cada evidencia debe indicar, dentro del archivo o en el informe:
-
-- fecha y responsables;
-- versión o commit del firmware;
-- condiciones de la prueba;
-- instrumento de referencia utilizado;
-- caso de prueba relacionado;
-- observaciones relevantes.
-
-Se deben conservar los datos originales. Los cálculos derivados pueden añadirse como archivos separados, sin reemplazar el registro fuente.
+- Los archivos corresponden a pruebas reales realizadas por el Grupo 8.
+- Los valores observados en las evidencias no deben modificarse.
+- Cualquier prueba futura debe agregar nuevas evidencias sin reemplazar los archivos existentes.
